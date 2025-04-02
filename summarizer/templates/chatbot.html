@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            margin-top: 10px;
+        }
+        p {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chatbot</h1>
+    <form id="chat-form">
+        {% csrf_token %}
+        <input type="text" id="message" name="message" placeholder="Ask something related to the summary..." required>
+        <button type="submit">Send</button>
+    </form>
+    <h2>Chatbot Response:</h2>
+    <p id="response-box"></p>
+
+    <a href="{% url 'summarizer' %}">Back to Summarizer</a>
+
+    <script>
+        document.getElementById("chat-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            let message = document.getElementById("message").value;
+            let csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+        
+            fetch("/chatbot/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrfToken
+                },
+                body: "message=" + encodeURIComponent(message)
+            })
+            .then(response => response.json())  // Expect JSON response
+            .then(data => {
+                document.getElementById("response-box").innerText = data.response;  // Display chatbot response
+            })
+            .catch(error => console.error("Error:", error));
+        });
+        </script>
+        
+</body>
+</html>

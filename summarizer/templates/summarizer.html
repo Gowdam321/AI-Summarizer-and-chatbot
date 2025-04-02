@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Summarizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            color: #4CAF50;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: #333;
+        }
+
+        .summary-container {
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 20px;
+            max-width: 500px;
+            word-wrap: break-word;
+        }
+
+        .chatbot-link {
+            display: block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: white;
+            background-color: #4CAF50;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+            max-width: 200px;
+            display: none; /* Hide by default */
+        }
+
+        .chatbot-link:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Text Summarization</h1>
+    
+    <form id="summarize-form">
+        {% csrf_token %}
+        <textarea id="text-input" name="text" rows="5" cols="50" placeholder="Enter text to summarize..."></textarea><br>
+        <button type="submit">Summarize</button>
+    </form>
+
+    <h2>Summary:</h2>
+    <div id="summary-container" class="summary-container"></div>
+
+    <a href="{% url 'chatbot' %}" id="chatbot-link" class="chatbot-link">Ask Questions in Chatbot</a>
+
+    <script>
+        document.getElementById('summarize-form').addEventListener('submit', function(event) {
+            event.preventDefault();  // Prevent page reload
+
+            let text = document.getElementById('text-input').value;
+            let csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("{% url 'summarizer' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrfToken
+                },
+                body: new URLSearchParams({text: text})
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('summary-container').innerText = data.summary;
+                document.getElementById('chatbot-link').style.display = "block"; // Show chatbot link
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    </script>
+</body>
+</html>
