@@ -46,24 +46,25 @@ def summarizer_view(request):
 
     return render(request, "summarizer.html", {"summary": summary})
 
-def chatbot(request):
-    """Handles chatbot interactions"""
-    if request.method == "POST":
-        user_question = request.POST.get("message", "")
-        summarized_text = request.session.get("summary", "")  # Retrieve summary from session
-
-        if not user_question or not summarized_text:
-            return JsonResponse({"response": "Please provide both a question and a summary."})
-
-        response = qa_pipeline(question=user_question, context=summarized_text)
-        return JsonResponse({"response": response["answer"]})  # Return chatbot response as JSON
-
-    return render(request, "chatbot.html")  # Load chatbot UI for GET requests
-
 @csrf_exempt
+def chatbot(request):
+    """Handles chatbot interactions via AJAX"""
+    if request.method == "POST":
+        question = request.POST.get("question", "")  # match frontend key
+        summarized_text = request.session.get("summary", "")  # from session
+
+        if not question or not summarized_text:
+            return JsonResponse({"answer": "Please provide a question and summarize the text first."})
+
+        result = qa_pipeline(question=question, context=summarized_text)
+        return JsonResponse({"answer": result["answer"]})  # match frontend key
+
+    return JsonResponse({"error": "Invalid request method"}, status=400)
+
+
 @csrf_exempt
 def summarize_text(request):
-    """Handles API-based summarization"""
+    """Handles AJAX-based summarization (POST) and renders page (GET)"""
     if request.method == "POST":
         try:
             if request.content_type == "application/json":
@@ -78,17 +79,19 @@ def summarize_text(request):
             extractive_summary_text = extractive_summary(text)
             abstractive_summary_text = abstractive_summary(text)
 
-            # Choose one or combine them
-            final_summary = abstractive_summary_text  # or extractive_summary_text
+            final_summary = abstractive_summary_text
 
-            return JsonResponse({
-                "summary": final_summary  # Ensure this key matches frontend expectations
-            }, status=200)
+            # ✅ Save summary in session
+            request.session["summary"] = final_summary
+
+            return JsonResponse({"summary": final_summary}, status=200)
 
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON format"}, status=400)
-    
+
+    # ✅ If GET request, render the combined summarizer + chatbot page
     return render(request, "summarizer.html")
+
 
 
 def summarizer_page(request):

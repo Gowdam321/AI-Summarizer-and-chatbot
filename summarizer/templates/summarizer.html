@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>AI Summarizer</title>
+    <title>AI Summarizer & Chatbot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,13 +18,14 @@
             margin-top: 20px;
         }
 
-        textarea {
+        textarea, input[type="text"] {
             width: 100%;
             max-width: 500px;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 14px;
+            margin-bottom: 10px;
         }
 
         button {
@@ -35,7 +36,6 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
         }
 
         button:hover {
@@ -43,56 +43,68 @@
         }
 
         h2 {
-            margin-top: 20px;
+            margin-top: 30px;
             color: #333;
         }
 
-        .summary-container {
+        .summary-container, .chatbot-container {
             background-color: #fff;
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ddd;
             border-radius: 5px;
-            margin-top: 20px;
+            margin-top: 10px;
             max-width: 500px;
             word-wrap: break-word;
         }
 
-        .chatbot-link {
-            display: block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: white;
-            background-color: #4CAF50;
-            padding: 10px 20px;
+        .chat-messages {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
             border-radius: 5px;
-            font-size: 16px;
-            text-align: center;
-            max-width: 200px;
-            display: none; /* Hide by default */
+            background-color: #fafafa;
         }
 
-        .chatbot-link:hover {
-            background-color: #45a049;
+        .user-msg {
+            font-weight: bold;
+            color: #1a73e8;
+        }
+
+        .bot-msg {
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Text Summarization</h1>
-    
+    <h1>Text Summarization & Chatbot</h1>
+
+    <!-- Summarizer Form -->
     <form id="summarize-form">
         {% csrf_token %}
-        <textarea id="text-input" name="text" rows="5" cols="50" placeholder="Enter text to summarize..."></textarea><br>
+        <textarea id="text-input" name="text" rows="5" placeholder="Enter text to summarize..."></textarea><br>
         <button type="submit">Summarize</button>
     </form>
 
     <h2>Summary:</h2>
     <div id="summary-container" class="summary-container"></div>
 
-    <a href="{% url 'chatbot' %}" id="chatbot-link" class="chatbot-link">Ask Questions in Chatbot</a>
+    <!-- Chatbot Section -->
+    <h2>Ask Questions (Chatbot):</h2>
+    <div class="chatbot-container">
+        <div id="chat-messages" class="chat-messages"></div>
+        <form id="chat-form">
+            {% csrf_token %}
+            <input type="text" id="chat-input" placeholder="Type your question..." required>
+            <button type="submit">Send</button>
+        </form>
+    </div>
 
     <script>
+        // Summarizer
         document.getElementById('summarize-form').addEventListener('submit', function(event) {
-            event.preventDefault();  // Prevent page reload
+            event.preventDefault();
 
             let text = document.getElementById('text-input').value;
             let csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -103,14 +115,42 @@
                     "Content-Type": "application/x-www-form-urlencoded",
                     "X-CSRFToken": csrfToken
                 },
-                body: new URLSearchParams({text: text})
+                body: new URLSearchParams({ text: text })
             })
             .then(response => response.json())
             .then(data => {
                 document.getElementById('summary-container').innerText = data.summary;
-                document.getElementById('chatbot-link').style.display = "block"; // Show chatbot link
             })
-            .catch(error => console.error("Error:", error));
+            .catch(error => console.error("Summarizer Error:", error));
+        });
+
+        // Chatbot
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let input = document.getElementById('chat-input');
+            let question = input.value;
+            input.value = "";
+
+            let messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML += `<div><span class="user-msg">You:</span> ${question}</div>`;
+
+            let csrfToken = document.querySelectorAll('[name=csrfmiddlewaretoken]')[1].value;
+
+            fetch("{% url 'chatbot' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrfToken
+                },
+                body: new URLSearchParams({ question: question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                messagesDiv.innerHTML += `<div><span class="bot-msg">Bot:</span> ${data.answer}</div>`;
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            })
+            .catch(error => console.error("Chatbot Error:", error));
         });
     </script>
 </body>
