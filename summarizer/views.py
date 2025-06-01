@@ -27,25 +27,6 @@ def home(request):
     """Render the home page"""
     return render(request, "home.html")
 
-def summarizer_view(request):
-    """Handles text summarization in the UI"""
-    summary = None
-
-    if request.method == "POST":
-        text = request.POST.get("text", "")
-
-        if text:
-            extractive_summary_text = extractive_summary(text)
-            abstractive_summary_text = abstractive_summary(text)
-
-            # Combine summaries or choose one
-            summary = abstractive_summary_text  # You can use extractive_summary_text too
-
-            # Store summary in session for chatbot access
-            request.session["summary"] = summary
-
-    return render(request, "summarizer.html", {"summary": summary})
-
 @csrf_exempt
 def chatbot(request):
     """Handles chatbot interactions via AJAX"""
@@ -92,10 +73,3 @@ def summarize_text(request):
     # ✅ If GET request, render the combined summarizer + chatbot page
     return render(request, "summarizer.html")
 
-def summarizer_page(request):
-    """Render the summarizer page"""
-    return render(request, "summarizer.html")
-
-def summarize_page(request):
-    """Render the index.html page"""
-    return render(request, "index.html")
