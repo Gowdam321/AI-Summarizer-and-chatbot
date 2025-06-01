@@ -20,7 +20,7 @@ def extractive_summary(text):
     """Extractive summarization using Sumy (LSA)"""
     parser = PlaintextParser.from_string(text, Tokenizer("english"))
     summarizer = LsaSummarizer()
-    summary = summarizer(parser.document, 3)  # Extract 3 sentences
+    summary = summarizer(parser.document, 7)  # Extract 3 sentences
     return " ".join(str(sentence) for sentence in summary)
 
 def home(request):
@@ -58,7 +58,7 @@ def summarize_text(request):
                 return JsonResponse({"error": "No text provided"}, status=400)
 
             extractive_summary_text = extractive_summary(text)
-            abstractive_summary_text = abstractive_summary(text)
+            abstractive_summary_text = abstractive_summary(extractive_summary_text)
 
             final_summary = abstractive_summary_text
 
