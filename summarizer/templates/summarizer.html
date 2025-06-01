@@ -135,7 +135,7 @@
             let messagesDiv = document.getElementById('chat-messages');
             messagesDiv.innerHTML += `<div><span class="user-msg">You:</span> ${question}</div>`;
 
-            let csrfToken = document.querySelectorAll('[name=csrfmiddlewaretoken]')[1].value;
+            let csrfToken = document.querySelectorAll('[name=csrfmiddlewaretoken]').value;
 
             fetch("{% url 'chatbot' %}", {
                 method: "POST",

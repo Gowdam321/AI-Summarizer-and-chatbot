@@ -63,7 +63,7 @@ def summarize_text(request):
             final_summary = abstractive_summary_text
 
             # ✅ Save summary in session
-            request.session["summary"] = final_summary
+            request.session["summary"] = text
 
             return JsonResponse({"summary": final_summary}, status=200)
 
