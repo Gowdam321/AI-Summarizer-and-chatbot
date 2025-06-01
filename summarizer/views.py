@@ -92,8 +92,6 @@ def summarize_text(request):
     # ✅ If GET request, render the combined summarizer + chatbot page
     return render(request, "summarizer.html")
 
-
-
 def summarizer_page(request):
     """Render the summarizer page"""
     return render(request, "summarizer.html")
