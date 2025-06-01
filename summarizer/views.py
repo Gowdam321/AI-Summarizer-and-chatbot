@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 
 # Load QA and summarization models
-qa_pipeline = pipeline("question-answering", model="facebook/bart-large-cnn")
+qa_pipeline = pipeline("question-answering", model="deepset/roberta-base-squad2")
 bart_summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
 def abstractive_summary(text):
